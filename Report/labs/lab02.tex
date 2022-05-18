@@ -1,0 +1,298 @@
+\subsection{Упражнение 1}
+
+Пилообразный сигнал линейно нарастает от -1 до 1, а затем резко падает до -1 и повторяется.
+
+\noindent Напишите класс, называемый SawtoothSignal, расширяющий signal и предоставляющий evaluate для оценки пилообразного сигнала.
+
+\noindent Вычислите спектр пилообразного сигнала. Как соотносится его гармоническая структура с тругольными с прямоугольными сигналами?
+
+Создадим класс SawtoothSignal:
+
+\begin{lstlisting}[language=Python]
+import thinkdsp
+
+class SawtoothSignal(thinkdsp.Sinusoid):
+  def evaluate(self, ts):
+    cycles = self.freq * ts + self.offset /np.pi / 2
+    frac, _ = np.modf(cycles)
+    ys = thinkdsp.normalize(thinkdsp.unbias(frac), self.amp)
+    return ys
+\end{lstlisting}
+
+Построим график пилообразного сигнала:
+
+\begin{lstlisting}[language=Python]
+saw_signal = SawtoothSignal()
+saw_signal.plot()
+saw_wave = saw_signal.make_wave(duration=2, framerate=10000)
+decorate(xlabel='Time (s)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab02/lab02_01.png}
+		\caption{График пилообразного сигнала}
+	\end{center}
+\end{figure}
+
+Вычислим спектр:
+
+\begin{lstlisting}[language=Python]
+spectr = saw_wave.make_spectrum()
+spectr.plot()
+decorate(xlabel='Frequency (Hz)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab02/lab02_02.png}
+		\caption{График спектра пилообразного сигнала}
+	\end{center}
+\end{figure}
+
+Построим треугольный сигнал и вычислим его спектр:
+
+\begin{lstlisting}[language=Python]
+triangle_signal = TriangleSignal()
+triangle_signal.plot()
+decorate(xlabel='Time (s)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab02/lab02_03.png}
+		\caption{График треугольного сигнала}
+	\end{center}
+\end{figure}
+
+\begin{lstlisting}[language=Python]
+triangle_signal.make_wave(duration=2, framerate=10000).make_spectrum().plot()
+decorate(xlabel='Frequency (Hz)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab02/lab02_04.png}
+		\caption{График спектра треугольного сигнала}
+	\end{center}
+\end{figure}
+
+Построим прямоугольный сигнал и вычислим его спектр:
+
+\begin{lstlisting}[language=Python]
+square_signal = SquareSignal()
+square_signal.plot()
+decorate(xlabel='Time (s)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab02/lab02_05.png}
+		\caption{График прямоугольного сигнала}
+	\end{center}
+\end{figure}
+
+\begin{lstlisting}[language=Python]
+square_signal.make_wave(duration=2, framerate=10000).make_spectrum().plot()
+decorate(xlabel='Frequency (Hz)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab02/lab02_06.png}
+		\caption{График спектра прямоугольного сигнала}
+	\end{center}
+\end{figure}
+
+Если сравнивать гармоническую структуру пилообразного сигнала с треугольным сигналом, то у треугольного сигнала амплитуда будет падать пропорционально квадрату частоты, а у пилообразного - пропорционально частоте, также как и прямоугольного.
+
+Если сравнивать гармоники, то у треугольного и прямоугольного сигналов есть только нечетные, а у пилообразного - четные и нечетные гармоники
+
+
+\subsection{Упражнение 2}
+
+Создайте прямугольный сигнал 1100 Гц и вычислите wave с выборками 10 000 кадров в секунду. Постройте спектр и убедитесь, что большинство гармоник "завёрнуты" из-за биений, слышно ли последствия этого при проигрывании?
+
+Создадим квадртаный сигнал с частотой 1100 Hz и с выборкой кадров в секунду 10000
+
+\begin{lstlisting}[language=Python]
+square = SquareSignal(1100)
+square_wave = square.make_wave(duration = 1, framerate=10000)
+square_wave.make_spectrum().plot()
+decorate(xlabel='Frequency (Hz)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab02/lab02_07.png}
+		\caption{График прямоугольного сигнала с частотой 1100 Hz}
+	\end{center}
+\end{figure}
+
+На спектре видна завернутость гармоник из-за биений
+\begin{lstlisting}[language=Python]
+square_wave.make_audio()
+\end{lstlisting}
+
+
+\subsection{Упражнение 3}
+
+Возьмите объект спектра spectrum, и выведите первые несколько значений spectrum.fs, вы увидите, что частоты начинаются с нуля. Итак, «spectrum.hs[0]» — это величина компонента с частотой 0. Но что это значит?
+
+\noindent Попробуйте этот эксперимент:
+
+1. Сделать треугольный сигнал с частотой 440 и создать Волну длительностью 0,01 секунды. Постройте форму волны.
+
+2. Создайте объект Spectrum и напечатайте spectrum.hs[0]. Каковы амплитуда и фаза этой составляющей?
+
+3. Установите spectrum.hs[0] = 100. Создайте волну из модифицированного спектра и выведите ее. Как эта операция влияет на форму сигнала?
+
+Создадим треугольный сигнал с частотой 440Hz и wave длительонстью 0,01 секунд
+
+\begin{lstlisting}[language=Python]
+triangle = TriangleSignal(440)
+triangle_wave = triangle.make_wave(duration=0.01)
+triangle_wave.plot()
+decorate(xlabel='Time (s)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab02/lab02_08.png}
+		\caption{График треугольного сигнала с частотой 440 Hz}
+	\end{center}
+\end{figure}
+
+Убедимся в том, что первый элемент массива hs объекта Spectrum - комплексное число, близкое к нулю
+
+\begin{lstlisting}[language=Python]
+tr_sp = triangle_wave.make_spectrum()
+tr_sp.hs[0]
+
+(1.0436096431476471e-14+0j)
+\end{lstlisting}
+
+Присвоим первому элементу значение 100 и построим график
+
+\begin{lstlisting}[language=Python]
+tr_sp.hs[0] = 100
+tr_sp.make_wave().plot()
+decorate(xlabel='Time (s)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab02/lab02_09.png}
+		\caption{Обновленный график сигнала}
+	\end{center}
+\end{figure}
+
+Исходя из графика можно сделать вывод, что сигнал сместился по вертикали. Значит первый элемент hs отвечает за смещение по вертикали и если он близок к нулю, то сигнал не смещается
+
+
+\subsection{Упражнение 4}
+
+Напишите функцию, которая принимает Spectrum в качестве параметра и модифицирует его, деля каждый элемент hs на соответствующую частоту из fs. Протестируйте свою функцию, используя один из файлов WAV в репозитории или любой объект Wave.
+
+1. Рассчитайте спектр и начертите его.
+
+2. Измените спектр, используя свою функцию, и снова начертите его.
+
+3. Сделать волну из модифицированного Spectrum и прослушать ее. Как эта операция влияет на сигнал?
+
+Создадим функцию, которая принимает на вход Spectrum и изменяет его делением каждого элемента hs на соответствующую частоту fs
+
+\begin{lstlisting}[language=Python]
+def spectrum_divide(sp):
+  sp.hs[1:] /= sp.fs[1:]
+  sp.hs[0] = 0
+\end{lstlisting}
+
+Проверим функцию на треугольном сигнале
+
+\begin{lstlisting}[language=Python]
+tr = TriangleSignal()
+tr_wave = tr.make_wave(duration=0.5, framerate=10000)
+tr_wave.make_audio()
+
+tr_sp = tr_wave.make_spectrum()
+tr_sp.plot()
+decorate(xlabel='Frequency (Hz)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab02/lab02_10.png}
+		\caption{Спектр сигнала}
+	\end{center}
+\end{figure}
+
+Применим функцию и посмотрим на результат
+
+\begin{lstlisting}[language=Python]
+spectrum_divide(tr_sp)
+tr_sp.plot()
+decorate(xlabel='Frequency (Hz)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab02/lab02_11.png}
+		\caption{Спектр измененного сигнала}
+	\end{center}
+\end{figure}
+
+\begin{lstlisting}[language=Python]
+tr_sp.make_wave().make_audio()
+\end{lstlisting}
+
+Звук стал ниже, функция работает как ФНЧ
+
+
+\subsection{Упражнение 5}
+
+Треугольные и прямоугольные волны имеют только нечетные гармоники; пилообразная волна имеет как четные, так и нечетные гармоники. Гармоники прямоугольной и пилообразной волн затухают пропорционально $1/f$; гармоники треугольной волны затухают как $1/f^2$. Можете ли вы найти форму волны, в которой четные и нечетные гармоники затухают как $1/f^2$?
+
+\noindent Подсказка: есть два способа подойти к этому: вы можете построить нужный сигнал путем сложения синусоид, или вы может начаться с сигнала, похожего на то, что вы хотите, и изменить его.
+
+Создадим сигнал, который состоит из четных и нечетных гармоник, а также эти гармоники падают пропорционально квадрату частоты.
+
+Возьмем пилообразный сигнал, который имет четные и нечетные гармоники, а далее скорректируем его спад при помощи функции из Упражения 2.5
+
+\begin{lstlisting}[language=Python]
+saw = SawtoothSignal(400)
+saw_wave = saw.make_wave(duration=0.5, framerate=20000)
+saw_sp = saw_wave.make_spectrum()
+saw_sp.plot()
+decorate(xlabel='Frequency (Hz)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab02/lab02_12.png}
+		\caption{Спектр пилообразного сигнала}
+	\end{center}
+\end{figure}
+
+Применим функцию для изменения амплитуды спада
+
+\begin{lstlisting}[language=Python]
+spectrum_divide(saw_sp)
+saw_sp.scale(400)
+saw_sp.plot()
+decorate(xlabel='Frequency (Hz)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab02/lab02_13.png}
+		\caption{Спектр измененного сигнала}
+	\end{center}
+\end{figure}
+
+Получается, что амплитуда падает пропорционально квадрату частоты, а также имеются четные и нечетные гармоники
+
+
+\subsection{Вывод}
+
+В данной работе были исследованы некоторые виды сигналов. Были рассмотрены спектры и гармонические структуры сигналов. Также в одном из пунктов были замечены биения и мы проверили их действие на звук.

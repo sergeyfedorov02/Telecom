@@ -1,0 +1,309 @@
+\subsection{Упражнение 1}
+
+Создадим треугольный сигнал, напечатаем его, применим diff к сигналу и проанализируем результат. Вычислим спектр треугольного сигнала, применим differentiate и проанализируем результат. Преобразуем спектр обратно в сигнал, проанализируем результат и различия в воздействия diff и differentiate на исходный сигнал
+
+\begin{lstlisting}[language=Python]
+from thinkdsp import TriangleSignal
+
+wave = TriangleSignal(freq=50).make_wave(duration=0.1, framerate=44100)
+wave.plot()
+decorate(xlabel='Time (s)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab09/lab09_01.png}
+		\caption{График сигнала}
+	\end{center}
+\end{figure}
+
+Применим функцию diff
+
+\begin{lstlisting}[language=Python]
+wave_diff = wave.diff()
+wave_diff.plot()
+decorate(xlabel='Time (s)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab09/lab09_02.png}
+		\caption{Сигнал после применения diff}
+	\end{center}
+\end{figure}
+
+На графике видны изломы ("звон") на месте перегиба треугольного сигнала, это связано с тем, что производная треуголнього сигнала не определена в точках излома этого сигнала
+
+Теперь применим дифференцирующий фильтр differentiate
+
+\begin{lstlisting}[language=Python]
+wave_differentiate = wave.make_spectrum().differentiate().make_wave()
+wave_differentiate.plot()
+decorate(xlabel='Time (s)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab09/lab09_03.png}
+		\caption{Сигнал после применения differentiate}
+	\end{center}
+\end{figure}
+
+
+\subsection{Упражнение 2}
+
+Создадим прямоугольный сигнал и напечатаем его. Применим cumsum и напечатаем результат. Вычислим спектр прямогоульного сигнала, применим integrate и напечатаем результат. Преобразуем спектр обратно в сигнал и напечаем его. Проанализиуерм результаты и постараемся найти различия в воздействии cumsum и integrate на этот сигнал.
+
+\begin{lstlisting}[language=Python]
+from thinkdsp import SquareSignal
+
+wave = SquareSignal(freq=50).make_wave(duration=0.1, framerate=44100)
+wave.plot()
+decorate(xlabel='Time (s)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab09/lab09_04.png}
+		\caption{Рассматриваемый сигнал}
+	\end{center}
+\end{figure}
+
+Теперь применим функцию нарастающей суммы, которая аппроксимирует интегрирование. Получим треугольный сигнал
+
+\begin{lstlisting}[language=Python]
+wave_cumsum = wave.cumsum()
+wave_cumsum.plot()
+decorate(xlabel='Time (s)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab09/lab09_05.png}
+		\caption{Рассматриваемый сигнал после применения cumsum}
+	\end{center}
+\end{figure}
+
+Теперь применим спектральный интеграл, который также является треугольным сигналом, хоть и с другой амплитудой
+
+\begin{lstlisting}[language=Python]
+spectrum = wave.make_spectrum().integrate()
+spectrum.hs[0] = 0
+wave_spectrum = spectrum.make_wave()
+wave_spectrum.plot()
+decorate(xlabel='Time (s)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab09/lab09_06.png}
+		\caption{Рассматриваемый сигнал после применения integrate}
+	\end{center}
+\end{figure}
+
+Исходя из графиков (результатов) видно, что различие воздейтсвий функций заключается лишь в амлитуде выходного графика
+
+
+\subsection{Упражнение 3}
+
+Создадим пилообразный сигнал, вычислим его спектр, а затем дважды применим integrate. Напечаем результирующий сигнал и его спектр. Какова математическая форма сигнала? Почему он напоминает синусойду?
+
+\begin{lstlisting}[language=Python]
+from thinkdsp import SawtoothSignal
+
+wave = SawtoothSignal(freq=50).make_wave(duration=0.1, framerate=44100)
+wave.plot()
+decorate(xlabel='Time (s)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab09/lab09_07.png}
+		\caption{Пилообразный сигнал}
+	\end{center}
+\end{figure}
+
+Первая нарастающая сумма - это парабола:
+
+\begin{lstlisting}[language=Python]
+wave_out = wave.cumsum()
+wave_out.unbias()
+wave_out.plot()
+decorate(xlabel='Time (s)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab09/lab09_08.png}
+		\caption{Первая нарастающая сумма}
+	\end{center}
+\end{figure}
+
+Вторая нарастающая сумма - это кубическая кривая:
+
+\begin{lstlisting}[language=Python]
+wave_out = wave_out.cumsum()
+wave_out.plot()
+decorate(xlabel='Time (s)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab09/lab09_09.png}
+		\caption{Вторая нарастающая сумма}
+	\end{center}
+\end{figure}
+
+Теперь дважды применим integrate и получим такую же кубическую кривую
+
+\begin{lstlisting}[language=Python]
+spectrum = wave.make_spectrum().integrate().integrate()
+spectrum.hs[0] = 0
+
+wave_out_2 = spectrum.make_wave()
+wave_out_2.plot()
+decorate(xlabel='Time (s)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab09/lab09_10.png}
+		\caption{График нового сигнала}
+	\end{center}
+\end{figure}
+
+Исходя из графика видно, что он похож на синусоиду, а двойная интеграция действует как фильтр нижних частот.
+
+\begin{lstlisting}[language=Python]
+wave_out_2.make_spectrum().plot(high=500)
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab09/lab09_11.png}
+		\caption{Спектр нового сигнала}
+	\end{center}
+\end{figure}
+
+
+\subsection{Упражнение 4}
+
+Изучим влияние второй разности и второй производной на CubicSignal, который определен в thinkdsp. Вычислим вторую разность, дважды применив diff. Вычислим вторую производную, применив differentiate к спектру. Проанализируем получившиеся результаты.
+
+\begin{lstlisting}[language=Python]
+from thinkdsp import CubicSignal
+
+wave = CubicSignal(freq=0.0005).make_wave(duration=10000, framerate=1)
+wave.plot()
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab09/lab09_12.png}
+		\caption{Кубический сигнал}
+	\end{center}
+\end{figure}
+
+Первая разность - это парабола, а вторая разность - пилообразный сигнал
+
+\begin{lstlisting}[language=Python]
+wave_diff_1 = wave.diff()
+wave_diff_1.plot()
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab09/lab09_13.png}
+		\caption{Первая разность}
+	\end{center}
+\end{figure}
+
+\begin{lstlisting}[language=Python]
+wave_diff_2 = wave_diff_1.diff()
+wave_diff_2.plot()
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab09/lab09_14.png}
+		\caption{Вторая разность}
+	\end{center}
+\end{figure}
+
+После двойного дифференцирования differentiate на графике виден пилообразный сигнал с небольшим звоном. Такой результат получается из-за того, что производная параболического сигнала в некоторых точках не определена.
+
+\begin{lstlisting}[language=Python]
+spectrum = wave.make_spectrum().differentiate().differentiate()
+wave_differentiate = spectrum.make_wave()
+wave_differentiate.plot()
+decorate(xlabel='Time (s)')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab09/lab09_15.png}
+		\caption{Полученный сигнал со звоном}
+	\end{center}
+\end{figure}
+
+Окно второй разности это -1, 2, -1. При вычислении ДПФ можно найти соответствующий фильтр.
+
+\begin{lstlisting}[language=Python]
+from thinkdsp import zero_pad
+from thinkdsp import Wave
+
+diff_window = np.array([-1.0, 2.0, -1.0])
+padded = zero_pad(diff_window, len(wave))
+diff_wave = Wave(padded, framerate=wave.framerate)
+diff_filter = diff_wave.make_spectrum()
+diff_filter.plot(label='2nd diff')
+
+decorate(xlabel='Frequency (Hz)',
+                 ylabel='Amplitude ratio')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab09/lab09_16.png}
+		\caption{Первый фильтр}
+	\end{center}
+\end{figure}
+
+Для второй производной можно найти соответствующий фильтр, рассчитав фильтр первой производной и возведя его в квадрат:
+
+\begin{lstlisting}[language=Python]
+deriv_filter = wave.make_spectrum()
+deriv_filter.hs = (2 * np.pi * 1j * deriv_filter.fs)**2
+deriv_filter.plot()
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab09/lab09_17.png}
+		\caption{Второй фильтр}
+	\end{center}
+\end{figure}
+
+Сравним эти два графика
+
+\begin{lstlisting}[language=Python]
+diff_filter.plot(label='2nd diff')
+deriv_filter.plot(label='2nd deriv')
+
+decorate(xlabel='Frequency (Hz)',
+                 ylabel='Amplitude ratio')
+\end{lstlisting}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[scale=1]{fig/lab09/lab09_18.png}
+		\caption{Сравнение фильтров}
+	\end{center}
+\end{figure}
+
+Оба являются фильтрами верхних частот, которые усиливают высокочастотные компоненты. Вторая производная является параболической, поэтому она больше всего усиливает самые высокие частоты, а вторая разность является хорошей аппроксимацией второй производной только на самых низких частотах, далее она существенно отклоняется.
+
+
+\subsection{Вывод}
+
+В данной работе были рассмотрены соотношения между окнами во временной области и фильтрами в частотной. Были рассмотрены конечные разности, аппроксимирующее дифференцирование и накапливающие суммы с аппроксимирующим интегрированием.

@@ -1,0 +1,83 @@
+\subsection{Упражнение 1}
+
+В этом упражнении требуется реализовать алгоритм Быстрого преобразования Фурье, его время работы пропорционально n logn. Для этоо требуется раздлеить исходный массив на четные элементы e и нечетные элементы o. Затем вычислить ДФТ для e и o. В конце же вычислим ДПФ от исходного массива для каждого знеачения n, при помощи леммы Дэниеолсона-Ланцоша
+
+\begin{lstlisting}[language=Python]
+import numpy as np
+PI2 = 2 * np.pi
+\end{lstlisting}
+
+Возьмем простой массив
+
+\begin{lstlisting}
+ys = [0.3, 0.5, -0.6, -0.1]
+hs = np.fft.fft(ys)
+hs
+
+array([ 0.1+0.j ,  0.9-0.6j, -0.7+0.j ,  0.9+0.6j])
+\end{lstlisting}
+
+Дискретное преобразование Фурье
+
+\begin{lstlisting}[language=Python]
+def dft(ys):
+    N = len(ys)
+    ts = np.arange(N) / N
+    freqs = np.arange(N)
+    args = np.outer(ts, freqs)
+    M = np.exp(1j * PI2 * args)
+    amps = M.conj().transpose().dot(ys)
+    return amps
+\end{lstlisting}
+
+Применим функцию
+
+\begin{lstlisting}[language=Python]
+dft(ys)
+
+array([ 0.1+0.j ,  0.9-0.6j, -0.7-0.j ,  0.9+0.6j])
+\end{lstlisting}
+
+Теперь создадим функцию для рекурсивного Быстрого преобразования Фурье. Также прямо в ней будем делить массив на четные и нечетные элементы
+
+\begin{lstlisting}[language=Python]
+def fft_1(ys):
+    N = len(ys)
+    e_arr = np.fft.fft(ys[::2])
+    o_arr = np.fft.fft(ys[1::2])
+
+    ns = np.arange(N)
+    W = np.exp(-1j * PI2 * ns / N)
+
+    return np.tile(e_arr, 2) + W * np.tile(o_arr, 2)
+    
+fft_1(ys)
+
+array([ 0.1+0.j ,  0.9-0.6j, -0.7-0.j ,  0.9+0.6j])
+\end{lstlisting}
+
+Теперь применим рекурсию для np.fft.fft
+
+\begin{lstlisting}[language=Python]
+def fft_2(ys):
+    if len(ys) == 1:
+      return ys
+
+    e_arr = fft_1(ys[::2])
+    o_arr = fft_1(ys[1::2])
+
+    ns = np.arange(len(ys))
+    W = np.exp(-1j * PI2 * ns / len(ys))
+    
+    return np.tile(e_arr, 2) + W * np.tile(o_arr, 2)
+    
+fft_2(ys)
+
+array([ 0.1+0.j ,  0.9-0.6j, -0.7-0.j ,  0.9+0.6j])
+\end{lstlisting}
+
+Результат идентичен с библиотечной функцией.
+
+\subsection{Вывод}
+
+Дискретное преобразование Фурье  — это одно из преобразований Фурье, широко применяемых в алгоритмах цифровой обработки сигналов , а также в других областях, связанных с анализом частот в дискретномсигнале. Дискретное преобразование Фурье требует в качестве входа дискретную функцию. Такие функции часто создаются путём дискретизации. В качестве упражнения была написана одна из реализаций БПФ.
